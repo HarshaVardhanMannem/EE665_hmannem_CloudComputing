@@ -1,0 +1,1510 @@
+[
+    {
+        "id": "b53398290a876579",
+        "type": "tab",
+        "label": "Car Monitoring System",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "01c1396e49c34e01",
+        "type": "inject",
+        "z": "b53398290a876579",
+        "name": "EngineTemp",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "5",
+        "topic": "car/enginetemp",
+        "payload": "",
+        "payloadType": "num",
+        "x": 110,
+        "y": 60,
+        "wires": [
+            [
+                "9e852502ca572b11"
+            ]
+        ]
+    },
+    {
+        "id": "258165cba8548398",
+        "type": "inject",
+        "z": "b53398290a876579",
+        "name": "Speed",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "car/speed",
+        "payload": "",
+        "payloadType": "num",
+        "x": 90,
+        "y": 180,
+        "wires": [
+            [
+                "a481167924508fe3"
+            ]
+        ]
+    },
+    {
+        "id": "9e852502ca572b11",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "EngineTemprature",
+        "func": "// Simulate engine temperature\nlet minTemp = 70; // minimum engine temperature\nlet maxTemp = 220; // maximum engine temperature\n// Generate a random engine temperature between minTemp and maxTemp\nlet engineTemperature = Math.floor(Math.random() * (maxTemp - minTemp + 1) + minTemp);\n// Create a JSON object with the value\nlet msgPayload = {\n engineTemperature: engineTemperature\n};\n// Set the payload to the message object\nmsg.payload = JSON.stringify(msgPayload);\n// Return the message object to be passed to the next node\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 60,
+        "wires": [
+            [
+                "25a7e97475b42565",
+                "a7104d36168b0fec"
+            ]
+        ]
+    },
+    {
+        "id": "25a7e97475b42565",
+        "type": "mqtt out",
+        "z": "b53398290a876579",
+        "name": "",
+        "topic": "",
+        "qos": "2",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "ca1119e15389d785",
+        "x": 550,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "55fd5a7d229f5dbb",
+        "type": "mqtt in",
+        "z": "b53398290a876579",
+        "name": "",
+        "topic": "car/+",
+        "qos": "2",
+        "datatype": "auto-detect",
+        "broker": "ca1119e15389d785",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 670,
+        "y": 260,
+        "wires": [
+            [
+                "f0cbb14f9e1c0a59"
+            ]
+        ]
+    },
+    {
+        "id": "a481167924508fe3",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Speed",
+        "func": "// Function to simulate speed data\nfunction simulateSpeed() {\n    // Define the speed range (in miles per hour or kilometers per hour)\n    const minSpeed = 0; // Min speed of the vehicle at rest\n    const maxSpeed = 120; // Max speed - hypothetical top speed of the vehicle\n    // Randomly decide if the car accelerates or decelerates\n    const change = Math.random() > 0.5 ? 1 : -1;\n    // Random acceleration factor between 1 and 5\n    const accelerationFactor = Math.floor(Math.random() * 5 + 1);\n    // Retrieve the current speed from the flow context to maintain state\n    let currentSpeed = flow.get('currentSpeed') || 0;\n    // Calculate new speed with random acceleration/deceleration\n    currentSpeed += change * accelerationFactor;\n    // Ensure the speed stays within the min and max range\n    currentSpeed = Math.max(minSpeed, Math.min(maxSpeed, currentSpeed));\n    // Update the flow context with the new speed\n    flow.set('currentSpeed', currentSpeed);\n    return currentSpeed;\n}\n// Call the simulateSpeed function and assign its value to msg.payload\nmsg.payload = {\n    speed: simulateSpeed() // Simulate speed data\n};\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 250,
+        "y": 180,
+        "wires": [
+            [
+                "a7104d36168b0fec",
+                "25a7e97475b42565"
+            ]
+        ]
+    },
+    {
+        "id": "a7104d36168b0fec",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Fuel Consumption",
+        "func": "// Simulate fuel consumption\nfunction generateFuelConsumption(speed, engineTemperature) {\n    // Base fuel consumption as miles per gallon (mpg) or liters per 100km\n    let baseFuelConsumption = 30; // Example base value, assuming 30 mpg\n    // Adjust fuel consumption based on speed and engine temperature\n    // Typically, fuel consumption increases as speed goes beyond an op�mal range\n    // or if the engine temperature is too high.\n    if (speed > 60) {\n        baseFuelConsumption -= (speed - 60) * 0.2;\n    }\n    if (engineTemperature > 200) {\n        baseFuelConsumption -= (engineTemperature - 200) * 0.1;\n    }\n    // Add some randomness to simulate real-world variations\n    let randomVariation = Math.random() * 2; // +/- 1 mpg\n    baseFuelConsumption += (randomVariation - 1);\n    // Ensure fuel consumption doesn't go below a threshold\n    if (baseFuelConsumption < 10) {\n        baseFuelConsumption = 10; // Minimum fuel consumption\n    }\n    return baseFuelConsumption;\n}\n\nlet speed = msg.payload.speed; // Extract speed from incoming message payload\nlet engineTemperature = msg.payload.engineTemperature; // Extract engine temperature from incoming message payload\nlet fuelConsumption = parseFloat(generateFuelConsumption(speed, engineTemperature).toFixed(2));\n\n\nmsg.payload = {\n    fuelConsumption: fuelConsumption\n};\n\nreturn msg;\n\n ",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 120,
+        "wires": [
+            [
+                "25a7e97475b42565"
+            ]
+        ]
+    },
+    {
+        "id": "eeb26b01e0465337",
+        "type": "inject",
+        "z": "b53398290a876579",
+        "name": "Seat belt",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "5",
+        "topic": "car/seatbelt",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 240,
+        "wires": [
+            [
+                "28878ea4c45a45d9"
+            ]
+        ]
+    },
+    {
+        "id": "28878ea4c45a45d9",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "SeatBeltEngagement",
+        "func": "// Function to simulate seat belt engagement data\nfunction simulateSeatBeltEngagement() {\n    // Define the probability of seatbelt being engaged\n    const probabilityOfEngagement = 0.8; // 80% chance the seatbelt is engaged\n    // Generate a random number between 0 and 1\n    const randomNum = Math.random();\n    // Determine seatbelt status based on the random number and probability\n    const seatBeltEngaged = randomNum < probabilityOfEngagement;\n    return seatBeltEngaged;\n}\n// Call the simulateSeatBeltEngagement function and assign its value to msg.payload\nmsg.payload = {\n    seatBeltEngaged: simulateSeatBeltEngagement() ? \"Engaged\" : \"Disengaged\"\n};\n// Return the message object to pass to the next node\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 240,
+        "wires": [
+            [
+                "25a7e97475b42565"
+            ]
+        ]
+    },
+    {
+        "id": "175fdafe893b9be3",
+        "type": "inject",
+        "z": "b53398290a876579",
+        "name": "CabinTemp",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "5",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "5",
+        "topic": "car/cabintemp",
+        "payload": "",
+        "payloadType": "date",
+        "x": 110,
+        "y": 300,
+        "wires": [
+            [
+                "32be92e907510477"
+            ]
+        ]
+    },
+    {
+        "id": "32be92e907510477",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "CabinTemperature",
+        "func": "// Function to simulate cabin temperature data\nfunction simulateCabinTemperature() {\n    // Define the typical temperature range inside a vehicle cabin in degrees Celsius\n    const minTemp = 15; // Minimum cabin temperature\n    const maxTemp = 35; // Maximum cabin temperature\n    // Simulate daily variation based on external factors\n    // For simplicity, we'll use a sine wave to simulate day/night temperature cycles\n    let hours = new Date().getHours();\n    let dailyVariation = Math.sin((hours / 24) * 2 * Math.PI);\n    // Calculate the current cabin temperature within the range, adjusted for daily variation\n    let cabinTemperature = minTemp + (maxTemp - minTemp) / 2 + (dailyVariation * (maxTemp - minTemp)\n        / 2);\n    // Add some randomness to simulate minor fluctuations\n    let randomFluctuation = (Math.random() - 0.8) * 2; // +/- 1 degree fluctuation\n    cabinTemperature += randomFluctuation;\n    return cabinTemperature;\n}\n// Call the simulateCabinTemperature function and assign its value to msg.payload\nmsg.payload = {\n    cabinTemperature:  parseFloat(simulateCabinTemperature().toFixed(2))// Round to 2 decimal places\n};\n// Return the message object to pass to the next node\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 300,
+        "wires": [
+            [
+                "25a7e97475b42565"
+            ]
+        ]
+    },
+    {
+        "id": "4a42620ae388310b",
+        "type": "inject",
+        "z": "b53398290a876579",
+        "name": "Air Quality",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "10",
+        "topic": "car/air",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 360,
+        "wires": [
+            [
+                "660cfa895d369748"
+            ]
+        ]
+    },
+    {
+        "id": "660cfa895d369748",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Air Quality",
+        "func": "// Function to simulate air quality data\nfunction simulateAirQuality() {\n // Define the AQI range\n const minAQI = 0; // Good air quality\n const maxAQI = 500; // Hazardous air quality\n // Generate a random AQI within the range\n let aqi = Math.floor(Math.random() * (maxAQI - minAQI + 1) + minAQI);\n return aqi;\n}\n// Call the simulateAirQuality function and assign its value to msg.payload\nmsg.payload = {\n airQualityIndex: simulateAirQuality() // Simulate air quality data\n};\n// Return the message object to pass to the next node\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 310,
+        "y": 360,
+        "wires": [
+            [
+                "25a7e97475b42565"
+            ]
+        ]
+    },
+    {
+        "id": "6ffc12a24b8dadd4",
+        "type": "inject",
+        "z": "b53398290a876579",
+        "name": "TirePressure",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "10",
+        "topic": "car/tire",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 420,
+        "wires": [
+            [
+                "d0a681caeaaa5aec"
+            ]
+        ]
+    },
+    {
+        "id": "d0a681caeaaa5aec",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Tire Pressure",
+        "func": "// Function to simulate tire pressure data for four tires\nfunction simulateTirePressure() {\n    // Define the normal tire pressure range in psi\n    const minPressure = 30; // Minimum normal pressure\n    const maxPressure = 35; // Maximum normal pressure\n    // Function to generate random pressure for a tire\n    const generatePressure = () => Math.floor(Math.random() * (maxPressure - minPressure + 1) +\n        minPressure);\n // Generate random pressure for each tire\n let tirePressures = {\n        frontLeft: generatePressure(),\n        frontRight: generatePressure(),\n        rearLeft: generatePressure(),\n        rearRight: generatePressure()\n    };\n    return tirePressures;\n}\n// Call the simulateTirePressure function and assign its value to msg.payload\nmsg.payload = simulateTirePressure(); // Simulate tire pressure data\n// Return the message object to pass to the next node\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 420,
+        "wires": [
+            [
+                "25a7e97475b42565"
+            ]
+        ]
+    },
+    {
+        "id": "15d75cc04c4ba561",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "AverageTirePressure",
+        "func": "//Function to calculate average tire pressure\nfunction AverageTirePressure()\n{\n    const frontleft = msg.payload.frontLeft;\n    const frontRight= msg.payload.frontRight;\n    const rearLeft = msg.payload.rearLeft;\n    const rearRight = msg.payload.rearRight;\n\n    const averagetirepressure = (frontRight+frontleft+rearLeft+rearRight)/4;\n\n    return averagetirepressure;\n}\n\nmsg.payload =\n{\n    AverageTirePressure : AverageTirePressure()\n    \n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060,
+        "y": 120,
+        "wires": [
+            [
+                "50b0dc201db52be5",
+                "ad7f9d0c938810ca"
+            ]
+        ]
+    },
+    {
+        "id": "45bd65ade659029b",
+        "type": "inject",
+        "z": "b53398290a876579",
+        "name": "Door ",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "10",
+        "topic": "car/door",
+        "payload": "",
+        "payloadType": "date",
+        "x": 90,
+        "y": 480,
+        "wires": [
+            [
+                "af9de73c2f304242"
+            ]
+        ]
+    },
+    {
+        "id": "af9de73c2f304242",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Door status",
+        "func": "// Function to simulate seat belt engagement data\nfunction simulateDoorStatus() {\n    // Define the probability of seatbelt being engaged\n    const probabilityOfEngagement = 0.8; // 80% chance the seatbelt is engaged\n    // Generate a random number between 0 and 1\n    const randomNum = Math.random();\n    // Determine seatbelt status based on the random number and probability\n    const DoorEngaged = randomNum < probabilityOfEngagement;\n    return DoorEngaged;\n}\n// Call the simulateSeatBeltEngagement function and assign its value to msg.payload\nmsg.payload = {\n    DoorStatus: simulateDoorStatus() ? \"Closed\" : \"Opened\"\n};\n// Return the message object to pass to the next node\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 270,
+        "y": 480,
+        "wires": [
+            [
+                "25a7e97475b42565"
+            ]
+        ]
+    },
+    {
+        "id": "50b0dc201db52be5",
+        "type": "ui_gauge",
+        "z": "b53398290a876579",
+        "name": "Tire Pressure Gauge",
+        "group": "f6b40bf406014793",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Tire pressure gauge",
+        "label": "psi",
+        "format": "{{msg.payload.AverageTirePressure}}",
+        "min": "5",
+        "max": "40",
+        "colors": [
+            "#00b500",
+            "#e2e600",
+            "#ca3838"
+        ],
+        "seg1": "33",
+        "seg2": "45",
+        "diff": false,
+        "className": "",
+        "x": 1320,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "ad7bc40672b7bb1a",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "CheckSeatBeltStatus",
+        "func": "msg.payload = msg.payload.seatBeltEngaged;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060,
+        "y": 200,
+        "wires": [
+            [
+                "fb815e4df7fe56ff"
+            ]
+        ]
+    },
+    {
+        "id": "39415e1c51762602",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "EngineTemp",
+        "func": "msg.payload =msg.payload.engineTemperature;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1030,
+        "y": 80,
+        "wires": [
+            [
+                "feb7189584eba351",
+                "4deb09eddbd1194e"
+            ]
+        ]
+    },
+    {
+        "id": "f0cbb14f9e1c0a59",
+        "type": "switch",
+        "z": "b53398290a876579",
+        "name": "Navigator",
+        "property": "topic",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "car/tire",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "car/enginetemp",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "car/fuel",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "car/seatbelt",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "car/door",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "car/speed",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "car/cabintemp",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "car/weather",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "car/air",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 9,
+        "x": 800,
+        "y": 260,
+        "wires": [
+            [
+                "15d75cc04c4ba561"
+            ],
+            [
+                "39415e1c51762602"
+            ],
+            [
+                "15ec5c3659d3c86b"
+            ],
+            [
+                "ad7bc40672b7bb1a"
+            ],
+            [
+                "5225828b302af943"
+            ],
+            [
+                "1695b0ab0c341492"
+            ],
+            [
+                "93cf4ee0227db138"
+            ],
+            [
+                "0ffa1a7f7e76ca51"
+            ],
+            [
+                "e8cfc10a6d1e33a8"
+            ]
+        ]
+    },
+    {
+        "id": "e783df38bcd852c3",
+        "type": "inject",
+        "z": "b53398290a876579",
+        "name": "Fuel Consumption",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": "1",
+        "topic": "car/fuel",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "a7104d36168b0fec"
+            ]
+        ]
+    },
+    {
+        "id": "a3b9c2dfc69bec32",
+        "type": "ui_chart",
+        "z": "b53398290a876579",
+        "name": "",
+        "group": "57fce1623bcf2dfa",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "label": "Fuel Consumption",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "dd HH:mm",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": true,
+        "ymin": "20",
+        "ymax": "100",
+        "removeOlder": 1,
+        "removeOlderPoints": "60",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1270,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "15ec5c3659d3c86b",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Fuel Consumption",
+        "func": "msg.payload= msg.payload.fuelConsumption;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 280,
+        "wires": [
+            [
+                "a3b9c2dfc69bec32",
+                "b63488159e691f56"
+            ]
+        ]
+    },
+    {
+        "id": "fb815e4df7fe56ff",
+        "type": "ui_led",
+        "z": "b53398290a876579",
+        "order": 2,
+        "group": "d89acb912adceb37",
+        "width": 0,
+        "height": 0,
+        "label": "Seat Belt Status",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "Disengaged",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "Engaged",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "SeatBelt status",
+        "x": 1260,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "5225828b302af943",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "CheckDoorStatus",
+        "func": "msg.payload = msg.payload.DoorStatus;\nreturn msg;\n\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 240,
+        "wires": [
+            [
+                "41b6503b8e95bcc3"
+            ]
+        ]
+    },
+    {
+        "id": "41b6503b8e95bcc3",
+        "type": "ui_led",
+        "z": "b53398290a876579",
+        "order": 0,
+        "group": "97ca623853b4205d",
+        "width": "0",
+        "height": "0",
+        "label": "Door Status",
+        "labelPlacement": "left",
+        "labelAlignment": "left",
+        "colorForValue": [
+            {
+                "color": "#ff0000",
+                "value": "Opened",
+                "valueType": "str"
+            },
+            {
+                "color": "#008000",
+                "value": "Closed",
+                "valueType": "str"
+            }
+        ],
+        "allowColorForValueInMessage": false,
+        "shape": "circle",
+        "showGlow": true,
+        "name": "Door Status",
+        "x": 1250,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "1695b0ab0c341492",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Speed ",
+        "func": "msg.payload =msg.payload.speed\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 990,
+        "y": 400,
+        "wires": [
+            [
+                "fab8e1eb8f13e77e",
+                "b77ea64cab3a103c"
+            ]
+        ]
+    },
+    {
+        "id": "fab8e1eb8f13e77e",
+        "type": "ui_chart",
+        "z": "b53398290a876579",
+        "name": "Speed",
+        "group": "6d145b40cdbd6c8f",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "label": "Speed",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "dd HH:mm",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": true,
+        "ymin": "0",
+        "ymax": "250",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "1",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 1210,
+        "y": 400,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "93cf4ee0227db138",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Cabin Temperature",
+        "func": "function CheckCabinTemperature(ctemp)\n{   \n    \n   if (ctemp <= 20) {\n        return \"Cabin Temperature is good\";\n    } else if (ctemp > 20 && ctemp <= 31) {\n        return \"Cabin temperature is moderate, Turn on AC if necessary\";\n    } else if (ctemp > 31 && ctemp <= 33) {\n        return \"Cabin temperature is high, Turn on AC immediately\";\n    } else if (ctemp > 33) {\n        return \"Cabin temperature is very high, Emergency situation, Turn on AC urgently\";\n    }\n}\n// Assuming temperature is in Celsius\nlet ctemp = msg.payload.cabinTemperature;\nmsg.payload = CheckCabinTemperature(ctemp);\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1030,
+        "y": 440,
+        "wires": [
+            [
+                "46431aea6284f87a"
+            ]
+        ]
+    },
+    {
+        "id": "feb7189584eba351",
+        "type": "ui_gauge",
+        "z": "b53398290a876579",
+        "name": "Engine Temperature",
+        "group": "97f7ce47f2a5146e",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "gtype": "gage",
+        "title": "Engine Temperature Gauge",
+        "label": "Fahrenheit",
+        "format": "{{value}}",
+        "min": "70",
+        "max": "240",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "220",
+        "seg2": "",
+        "diff": false,
+        "className": "",
+        "x": 1280,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "6821c82c594b57c0",
+        "type": "openweathermap",
+        "z": "b53398290a876579",
+        "name": "Weather",
+        "wtype": "current",
+        "lon": "",
+        "lat": "",
+        "city": "Texas",
+        "country": "United States",
+        "language": "en",
+        "x": 300,
+        "y": 540,
+        "wires": [
+            [
+                "25a7e97475b42565"
+            ]
+        ]
+    },
+    {
+        "id": "253814a171053618",
+        "type": "inject",
+        "z": "b53398290a876579",
+        "name": "Current Weather",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "10",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "10",
+        "topic": "car/weather",
+        "payload": "",
+        "payloadType": "num",
+        "x": 130,
+        "y": 540,
+        "wires": [
+            [
+                "6821c82c594b57c0"
+            ]
+        ]
+    },
+    {
+        "id": "0ffa1a7f7e76ca51",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Check Current Weather",
+        "func": "function CheckWeather() {\n    if (msg.payload.weather === \"Rain\" || msg.payload.detail === \"moderate rain\") {\n        return \"DrivingConditions: 'Moderate rain, avoid driving unless it is urgent'\";\n    } \n    else if (msg.payload.detail === \"heavy rain\")\n    {\n        return \"DrivingConditions: 'Heavy rain, avoid driving'\";\n    }\n    else if(msg.payload.weather ===\"Mist\")\n    {\n        return \"DrivingConditions: 'Mist, not suitable for driving'\"\n    }\n    else if(msg.payload.weather ===\"Fog\")\n    {\n        return \"DrivingConditions: 'Fog weather, not suitable for driving'\";\n    }\n    else {\n    \n        // Handle other weather conditions if needed\n        return \"DrivingConditions: 'No specific driving conditions advice available'\";\n    }\n}\nmsg.payload = CheckWeather();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 480,
+        "wires": [
+            [
+                "bea995aafe3b450e"
+            ]
+        ]
+    },
+    {
+        "id": "bea995aafe3b450e",
+        "type": "ui_text",
+        "z": "b53398290a876579",
+        "group": "0ec91708ddbc99fe",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "name": "Weather conditions",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-left",
+        "className": "",
+        "style": true,
+        "font": "Times New Roman,Times,serif",
+        "fontSize": "16",
+        "color": "#360000",
+        "x": 1310,
+        "y": 480,
+        "wires": []
+    },
+    {
+        "id": "46431aea6284f87a",
+        "type": "ui_text",
+        "z": "b53398290a876579",
+        "group": "9b0a3445d66dc8f3",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Cabin Temperature Status",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": true,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1310,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "e8cfc10a6d1e33a8",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Air Quality ",
+        "func": "function CheckAirquality()\n{\n    let airquality = msg.payload.airQualityIndex;\n    if(airquality<=250)\n    {\n        return \"Air quality is good\";\n    }\n    else if(airquality>250 && airquality < 350)\n    {\n        return \"Air quality is moderate\"\n    }\n    else{\n        return \"Air quality is bad and is dangerous to health\";\n    }\n}\n\nmsg.payload = CheckAirquality();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 520,
+        "wires": [
+            [
+                "e0206168e785308f"
+            ]
+        ]
+    },
+    {
+        "id": "e0206168e785308f",
+        "type": "ui_text",
+        "z": "b53398290a876579",
+        "group": "2880425572e2cc10",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Air Quality",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1250,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "4deb09eddbd1194e",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "EngTempValidation",
+        "func": "function checkEngTemp()\n{\n   let temp = msg.payload;\n   if(temp>200){\n      return \"Alert:Engine temperature is high\";\n   }\n   else{\n      return \"EngineTemperature is good\";\n   }\n}\nmsg.payload = checkEngTemp();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1050,
+        "y": 40,
+        "wires": [
+            [
+                "97b80b7d82445061"
+            ]
+        ]
+    },
+    {
+        "id": "97b80b7d82445061",
+        "type": "ui_text",
+        "z": "b53398290a876579",
+        "group": "6b5ad27f38e48569",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "name": "Engine Temperature Status",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1300,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "b77ea64cab3a103c",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Speed Check",
+        "func": "function SpeedCheck(){\n    const speed =msg.payload;\n    if(speed>105)\n    {\n        return \"Alert: Excessive speed, please slow down\";\n    }\n    else{\n        return \"Moderate speed\";\n    }\n    \n}\nmsg.payload = SpeedCheck();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1040,
+        "y": 360,
+        "wires": [
+            [
+                "c709c80fb60cbf19"
+            ]
+        ]
+    },
+    {
+        "id": "c709c80fb60cbf19",
+        "type": "ui_text",
+        "z": "b53398290a876579",
+        "group": "964c35064f871182",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Speed Status",
+        "label": "",
+        "format": "{{value}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1280,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "ad7f9d0c938810ca",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "Tire Pressure Status",
+        "func": "function CheckTirePressure(){\n    let p = msg.payload;\n    if(p<30)\n    {\n        return \"Tire pressure is poor, please check\";\n    }\n    else{\n        return \"Tire pressure is good\";\n    }\n}\nmsg.payload = CheckTirePressure();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1060,
+        "y": 160,
+        "wires": [
+            [
+                "241adc29f0e6f11e"
+            ]
+        ]
+    },
+    {
+        "id": "241adc29f0e6f11e",
+        "type": "ui_text",
+        "z": "b53398290a876579",
+        "group": "9df4f6995cb3b0ee",
+        "order": 0,
+        "width": 0,
+        "height": 0,
+        "name": "Tire Pressure Status",
+        "label": "",
+        "format": "{{value}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1290,
+        "y": 160,
+        "wires": []
+    },
+    {
+        "id": "b63488159e691f56",
+        "type": "function",
+        "z": "b53398290a876579",
+        "name": "FuelConsumption Check",
+        "func": "function fuelStatus()\n{\n    let fuel=msg.payload;\n    if(fuel>32)\n    {\n        return \"Alert:Rapid fuel consumption\";\n    }\n    else{\n        return \"Moderate fuel consumption\";\n    }\n}\nmsg.payload = fuelStatus();\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1080,
+        "y": 320,
+        "wires": [
+            [
+                "15234977804e1761"
+            ]
+        ]
+    },
+    {
+        "id": "15234977804e1761",
+        "type": "ui_text",
+        "z": "b53398290a876579",
+        "group": "8e803429747bf5aa",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Fuel ConsumptionCheck",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1330,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "fc8bd58da98ea120",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "97f7ce47f2a5146e",
+        "order": 2,
+        "width": "2",
+        "height": "1"
+    },
+    {
+        "id": "054bd2d88d5f8778",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "97f7ce47f2a5146e",
+        "order": 2,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "18ac128be64eb1af",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "57fce1623bcf2dfa",
+        "order": 3,
+        "width": "2",
+        "height": "1"
+    },
+    {
+        "id": "2ca6b3ec883b4433",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "d89acb912adceb37",
+        "order": 4,
+        "width": "2",
+        "height": "1"
+    },
+    {
+        "id": "3116f0c8899f0a56",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "d89acb912adceb37",
+        "order": 4,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "0a959cb2320d4364",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "97ca623853b4205d",
+        "order": 5,
+        "width": "2",
+        "height": "1"
+    },
+    {
+        "id": "422ae64a231303c3",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "6d145b40cdbd6c8f",
+        "order": 6,
+        "width": "2",
+        "height": "1"
+    },
+    {
+        "id": "82ea737f7c2781b3",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "0ec91708ddbc99fe",
+        "order": 7,
+        "width": "2",
+        "height": "1"
+    },
+    {
+        "id": "d31cf5367fd5965e",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "9b0a3445d66dc8f3",
+        "order": 8,
+        "width": "2",
+        "height": "1"
+    },
+    {
+        "id": "16f9e261fb41e421",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "2880425572e2cc10",
+        "order": 9,
+        "width": "2",
+        "height": "1"
+    },
+    {
+        "id": "a61646d224f6dc59",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "964c35064f871182",
+        "order": 11,
+        "width": "1",
+        "height": "1"
+    },
+    {
+        "id": "2543ae3b7cd4e5fa",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "9df4f6995cb3b0ee",
+        "order": 12,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "311a83bc7c017e51",
+        "type": "ui_spacer",
+        "z": "b53398290a876579",
+        "name": "spacer",
+        "group": "8e803429747bf5aa",
+        "order": 13,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "ca1119e15389d785",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "127.0.0.1",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "f6b40bf406014793",
+        "type": "ui_group",
+        "name": "Tire Pressure",
+        "tab": "eacd74364b592cb4",
+        "order": 1,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "57fce1623bcf2dfa",
+        "type": "ui_group",
+        "name": "Fuel Consumption",
+        "tab": "eacd74364b592cb4",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "d89acb912adceb37",
+        "type": "ui_group",
+        "name": "SeatBelt Status",
+        "tab": "eacd74364b592cb4",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "97ca623853b4205d",
+        "type": "ui_group",
+        "name": "Door Status",
+        "tab": "eacd74364b592cb4",
+        "order": 5,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6d145b40cdbd6c8f",
+        "type": "ui_group",
+        "name": "Speed",
+        "tab": "eacd74364b592cb4",
+        "order": 6,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "97f7ce47f2a5146e",
+        "type": "ui_group",
+        "name": "Engine Temperature",
+        "tab": "eacd74364b592cb4",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "0ec91708ddbc99fe",
+        "type": "ui_group",
+        "name": "Weather Conditions",
+        "tab": "eacd74364b592cb4",
+        "order": 7,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "9b0a3445d66dc8f3",
+        "type": "ui_group",
+        "name": "Cabin Temperature",
+        "tab": "eacd74364b592cb4",
+        "order": 8,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "2880425572e2cc10",
+        "type": "ui_group",
+        "name": "Air Quality",
+        "tab": "eacd74364b592cb4",
+        "order": 9,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "6b5ad27f38e48569",
+        "type": "ui_group",
+        "name": "Engine Temperature Status",
+        "tab": "eacd74364b592cb4",
+        "order": 10,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "964c35064f871182",
+        "type": "ui_group",
+        "name": "Speed Status",
+        "tab": "eacd74364b592cb4",
+        "order": 11,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "9df4f6995cb3b0ee",
+        "type": "ui_group",
+        "name": "Tire pressure Status",
+        "tab": "eacd74364b592cb4",
+        "order": 12,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "8e803429747bf5aa",
+        "type": "ui_group",
+        "name": "FuelConsumption Check",
+        "tab": "eacd74364b592cb4",
+        "order": 13,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "eacd74364b592cb4",
+        "type": "ui_tab",
+        "name": "Car",
+        "icon": "dashboard",
+        "order": 2,
+        "disabled": false,
+        "hidden": false
+    }
+]
